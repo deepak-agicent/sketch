@@ -369,6 +369,27 @@ export const FaceCanvas: React.FC<FaceCanvasProps> = ({
               <circle cx="240" cy="245" r="1.5" />
             </g>
           )}
+
+          {activeParts.marks === 'marks-chin-cleft' && (
+            <path d="M 197,340 C 196,346 204,346 203,340" stroke={skin.shadow} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          )}
+
+          {activeParts.marks === 'marks-cheek-dimples' && (
+            <g stroke={skin.shadow} strokeWidth="2" fill="none" opacity="0.75" strokeLinecap="round">
+              <path d="M 148,272 Q 144,282 148,290" />
+              <path d="M 252,272 Q 256,282 252,290" />
+            </g>
+          )}
+
+          {activeParts.marks === 'marks-beauty-mole' && (
+            <circle cx="218" cy="288" r="2.8" fill="#2d1a10" />
+          )}
+
+          {activeParts.marks === 'marks-stubble-salt-pepper' && (
+            <g fill="#475569" opacity="0.35">
+              <path d="M 125,250 C 120,330 145,360 200,360 C 255,360 280,330 275,250 C 270,300 240,345 200,345 C 160,345 130,300 125,250 Z" />
+            </g>
+          )}
         </g>
 
         {/* --- LAYER 4: NOSE --- */}
@@ -704,6 +725,20 @@ export const FaceCanvas: React.FC<FaceCanvasProps> = ({
               fill={beardColor}
             />
           )}
+
+          {activeParts.beard === 'beard-full-rugged' && (
+            <g fill={beardColor}>
+              <path d="M 115,220 C 112,345 138,380 200,380 C 262,380 288,345 285,220 C 275,325 250,358 200,358 C 150,358 125,325 115,220 Z" />
+              <path d="M 160,282 Q 200,274 240,282 Q 200,306 160,282 Z" />
+            </g>
+          )}
+
+          {activeParts.beard === 'beard-stubble-chin' && (
+            <g fill={beardColor} opacity="0.45">
+              <path d="M 140,320 C 150,355 250,355 260,320 C 245,348 155,348 140,320 Z" />
+              <path d="M 175,286 Q 200,282 225,286 L 225,292 Q 200,288 175,292 Z" />
+            </g>
+          )}
         </g>
 
         {/* --- LAYER 8: HAIRSTYLE --- */}
@@ -791,6 +826,65 @@ export const FaceCanvas: React.FC<FaceCanvasProps> = ({
               d="M 105,130 C 95,50 305,50 295,130 C 310,210 300,280 280,280 C 275,200 275,120 200,85 C 125,120 125,200 120,280 C 100,280 90,210 105,130 Z"
               fill="url(#hairGrad)"
             />
+          ) : activeParts.hair === 'hair-widows-peak' ? (
+            <g fill="url(#hairGrad)" filter="url(#shadowFilter)">
+              {/* Executive Hair contour with natural widow's peak */}
+              <path d="M 98,155 C 90,38 310,38 302,155 C 285,118 255,88 200,108 C 145,88 115,118 98,155 Z" />
+              {/* Textured styling highlights */}
+              <path d="M 125,110 Q 165,85 220,88 Q 265,95 282,118" stroke="#ffffff" strokeWidth="1.5" opacity="0.25" fill="none" />
+              <path d="M 140,100 Q 185,78 235,82" stroke="#ffffff" strokeWidth="1.2" opacity="0.2" fill="none" />
+            </g>
+          ) : activeParts.hair === 'hair-silver-curls' ? (
+            <g fill="url(#hairGrad)">
+              <circle cx="120" cy="110" r="22" />
+              <circle cx="150" cy="85" r="24" />
+              <circle cx="200" cy="75" r="26" />
+              <circle cx="250" cy="85" r="24" />
+              <circle cx="280" cy="110" r="22" />
+              <path d="M 110,145 C 110,90 290,90 290,145 C 275,120 245,100 200,100 C 155,100 125,120 110,145 Z" />
+            </g>
+          ) : activeParts.hair === 'hair-sleek-bangs' ? (
+            <g fill="url(#hairGrad)">
+              <path d="M 100,130 C 95,50 305,50 300,130 C 312,210 305,270 285,270 C 278,190 270,110 200,75 C 130,110 122,190 115,270 C 95,270 88,210 100,130 Z" />
+              <path d="M 115,130 C 150,155 250,155 285,130 C 265,115 240,110 200,110 C 160,110 135,115 115,130 Z" opacity="0.9" />
+            </g>
+          ) : activeParts.hair === 'hair-taper-fade' ? (
+            <path
+              d="M 112,145 C 110,65 290,65 288,145 C 278,110 248,80 200,80 C 152,80 122,110 112,145 Z"
+              fill="url(#hairGrad)"
+            />
+          ) : activeParts.hair === 'hair-shoulder-flow' ? (
+            <path
+              d="M 105,140 C 98,45 302,45 295,140 C 315,220 310,320 288,360 C 275,300 282,190 275,135 C 240,95 160,95 125,135 C 118,190 125,300 112,360 C 90,320 85,220 105,140 Z"
+              fill="url(#hairGrad)"
+              filter="url(#shadowFilter)"
+            />
+          ) : activeParts.hair === 'hair-peaky-undercut' ? (
+            <g fill="url(#hairGrad)">
+              <path d="M 102,145 C 95,45 305,45 298,145 C 285,100 245,65 200,65 C 155,65 115,100 102,145 Z" filter="url(#shadowFilter)" />
+              <path d="M 118,145 C 135,130 170,120 200,120 C 230,120 265,130 282,145 Z" opacity="0.4" />
+            </g>
+          ) : activeParts.hair === 'hair-wild-einstein' ? (
+            <g fill="url(#hairGrad)">
+              <circle cx="100" cy="110" r="32" />
+              <circle cx="140" cy="65" r="35" />
+              <circle cx="200" cy="50" r="40" />
+              <circle cx="260" cy="65" r="35" />
+              <circle cx="300" cy="110" r="32" />
+              <circle cx="85" cy="155" r="28" />
+              <circle cx="315" cy="155" r="28" />
+            </g>
+          ) : activeParts.hair === 'hair-braided-updo' ? (
+            <g fill="url(#hairGrad)">
+              <circle cx="200" cy="40" r="32" />
+              <path d="M 108,140 C 105,65 295,65 292,140 C 278,95 248,75 200,75 C 152,75 122,95 108,140 Z" />
+            </g>
+          ) : activeParts.hair === 'hair-sleek-slickback' ? (
+            <path
+              d="M 106,142 C 102,48 298,48 294,142 C 282,78 252,62 200,62 C 148,62 118,78 106,142 Z"
+              fill="url(#hairGrad)"
+              filter="url(#shadowFilter)"
+            />
           ) : activeParts.hair === 'hair-bald' ? (
             /* Bald scalp sheen line */
             <path d="M 140,90 Q 200,75 260,90" stroke="#ffffff" strokeWidth="2.5" opacity="0.3" fill="none" />
@@ -836,6 +930,26 @@ export const FaceCanvas: React.FC<FaceCanvasProps> = ({
               <line x1="188" y1="192" x2="212" y2="192" stroke="#38bdf8" strokeWidth="4" />
               <line x1="125" y1="192" x2="92" y2="188" stroke="#0284c7" strokeWidth="3" />
               <line x1="275" y1="192" x2="308" y2="188" stroke="#0284c7" strokeWidth="3" />
+            </g>
+          )}
+
+          {activeParts.glasses === 'glasses-rimless-round' && (
+            <g stroke={glassesColor} strokeWidth="1.8" fill="none">
+              <circle cx="158" cy="205" r="23" fill="rgba(255,255,255,0.18)" strokeWidth="1.2" />
+              <circle cx="242" cy="205" r="23" fill="rgba(255,255,255,0.18)" strokeWidth="1.2" />
+              <line x1="181" y1="205" x2="219" y2="205" strokeWidth="2" />
+              <line x1="135" y1="205" x2="95" y2="198" />
+              <line x1="265" y1="205" x2="305" y2="198" />
+            </g>
+          )}
+
+          {activeParts.glasses === 'glasses-classic-wayfarer' && (
+            <g stroke="#0f172a" strokeWidth="3.5" fill="#1e293b" opacity="0.95">
+              <path d="M 125,188 L 188,188 C 185,225 135,225 128,212 Z" />
+              <path d="M 212,188 L 275,188 C 272,212 265,225 215,225 Z" />
+              <line x1="188" y1="192" x2="212" y2="192" stroke="#0f172a" strokeWidth="4" />
+              <line x1="125" y1="190" x2="92" y2="185" stroke="#0f172a" strokeWidth="3.5" />
+              <line x1="275" y1="190" x2="308" y2="185" stroke="#0f172a" strokeWidth="3.5" />
             </g>
           )}
         </g>

@@ -23,7 +23,8 @@ import {
   Users,
   Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Star
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -34,6 +35,7 @@ export default function LandingPage() {
   const [showAll, setShowAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female' | 'androgynous'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'real-person' | 'forensic'>('all');
 
   const handleNextPreset = () => {
     const nextIdx = (demoIndex + 1) % PRESET_SUSPECTS.length;
@@ -53,13 +55,23 @@ export default function LandingPage() {
   };
 
   const filteredPresets = PRESET_SUSPECTS.filter((preset) => {
+    const matchesCategory =
+      categoryFilter === 'all'
+        ? true
+        : categoryFilter === 'real-person'
+        ? preset.category === 'real-person'
+        : preset.category !== 'real-person';
+
     const matchesSearch =
       preset.codeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       preset.caseNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      preset.demographicSummary.toLowerCase().includes(searchQuery.toLowerCase());
+      preset.demographicSummary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (preset.realPersonName && preset.realPersonName.toLowerCase().includes(searchQuery.toLowerCase()));
+
     const matchesGender =
       genderFilter === 'all' || preset.faceState.gender === genderFilter;
-    return matchesSearch && matchesGender;
+
+    return matchesCategory && matchesSearch && matchesGender;
   });
 
   const displayedPresets = showAll ? filteredPresets : filteredPresets.slice(0, 10);
@@ -266,38 +278,77 @@ export default function LandingPage() {
           </div>
 
           {/* Search & Filter Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search 100 suspects (e.g. Marcus, CASE-8801, Afro)..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 text-xs font-mono w-full sm:w-auto">
-              <Filter className="w-3.5 h-3.5 text-sky-400" />
-              <span className="text-slate-400">Gender:</span>
-              {(['all', 'male', 'female', 'androgynous'] as const).map((g) => (
+          <div className="flex flex-col gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 backdrop-blur-md">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+              {/* Category Filters */}
+              <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto pb-1 lg:pb-0">
                 <button
-                  key={g}
-                  onClick={() => setGenderFilter(g)}
-                  className={`px-2.5 py-1 rounded-lg border text-[11px] uppercase transition-all ${
-                    genderFilter === g
-                      ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
+                  onClick={() => setCategoryFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+                    categoryFilter === 'all'
+                      ? 'bg-sky-500/20 border-sky-400 text-sky-300 shadow-md'
                       : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                   }`}
                 >
-                  {g}
+                  <Users className="w-3.5 h-3.5" /> All Profiles (100+)
                 </button>
-              ))}
+                <button
+                  onClick={() => setCategoryFilter('real-person')}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+                    categoryFilter === 'real-person'
+                      ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md shadow-amber-500/10'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-amber-500/50 hover:text-amber-300'
+                  }`}
+                >
+                  <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /> Real Person Sketches (12)
+                </button>
+                <button
+                  onClick={() => setCategoryFilter('forensic')}
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+                    categoryFilter === 'forensic'
+                      ? 'bg-sky-500/20 border-sky-400 text-sky-300 shadow-md'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-sky-400" /> Forensic Profiles (90)
+                </button>
+              </div>
+
+              {/* Search Box */}
+              <div className="relative w-full lg:w-80">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search (e.g. Elon, Jobs, Taylor, Marcus)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
+                />
+              </div>
             </div>
 
-            <div className="text-xs font-mono text-slate-400">
-              Showing <span className="text-sky-400 font-bold">{displayedPresets.length}</span> of {filteredPresets.length}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-mono w-full sm:w-auto">
+                <Filter className="w-3.5 h-3.5 text-sky-400" />
+                <span className="text-slate-400">Gender:</span>
+                {(['all', 'male', 'female', 'androgynous'] as const).map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => setGenderFilter(g)}
+                    className={`px-2.5 py-1 rounded-lg border text-[11px] uppercase transition-all ${
+                      genderFilter === g
+                        ? 'bg-sky-500/20 border-sky-400 text-sky-300 font-bold'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+
+              <div className="text-xs font-mono text-slate-400">
+                Showing <span className="text-sky-400 font-bold">{displayedPresets.length}</span> of {filteredPresets.length}
+              </div>
             </div>
           </div>
 
@@ -306,7 +357,11 @@ export default function LandingPage() {
             {displayedPresets.map((preset) => (
               <div
                 key={preset.id}
-                className="glass-panel p-4 rounded-2xl border border-slate-800 hover:border-sky-500/50 transition-all flex flex-col justify-between group space-y-4 shadow-lg hover:shadow-[0_0_20px_rgba(56,189,248,0.2)]"
+                className={`glass-panel p-4 rounded-2xl transition-all flex flex-col justify-between group space-y-4 shadow-lg ${
+                  preset.category === 'real-person'
+                    ? 'border border-amber-500/40 hover:border-amber-400 hover:shadow-[0_0_20px_rgba(245,158,11,0.25)] bg-slate-900/90'
+                    : 'border border-slate-800 hover:border-sky-500/50 hover:shadow-[0_0_20px_rgba(56,189,248,0.2)]'
+                }`}
               >
                 <div className="space-y-3">
                   {/* Canvas Thumbnail */}
@@ -321,12 +376,20 @@ export default function LandingPage() {
                     <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-slate-950/80 border border-slate-800 text-[9px] font-mono text-sky-400 font-bold">
                       {preset.caseNumber}
                     </div>
+
+                    {preset.category === 'real-person' && (
+                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-amber-500 text-slate-950 text-[9px] font-mono font-bold flex items-center gap-1 shadow-md">
+                        <Star className="w-2.5 h-2.5 fill-slate-950" /> REAL PERSON
+                      </div>
+                    )}
                   </div>
 
                   {/* Suspect Meta */}
                   <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-slate-100 group-hover:text-sky-300 transition-colors truncate">
-                      {preset.codeName}
+                    <h3 className={`text-sm font-bold truncate transition-colors ${
+                      preset.category === 'real-person' ? 'text-amber-300 group-hover:text-amber-200' : 'text-slate-100 group-hover:text-sky-300'
+                    }`}>
+                      {preset.realPersonName ? `⭐ ${preset.realPersonName}` : preset.codeName}
                     </h3>
                     <p className="text-[11px] font-mono text-slate-400 truncate">
                       {preset.demographicSummary}
@@ -340,7 +403,11 @@ export default function LandingPage() {
                 {/* Direct Action Link */}
                 <Link
                   href={`/draw?preset=${preset.id}`}
-                  className="w-full py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500 border border-sky-500/30 hover:border-sky-400 text-sky-400 hover:text-slate-950 font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm group-hover:shadow-[0_0_12px_rgba(56,189,248,0.3)]"
+                  className={`w-full py-2.5 rounded-xl font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                    preset.category === 'real-person'
+                      ? 'bg-amber-500/20 hover:bg-amber-500 border border-amber-500/40 text-amber-300 hover:text-slate-950'
+                      : 'bg-sky-500/10 hover:bg-sky-500 border border-sky-500/30 hover:border-sky-400 text-sky-400 hover:text-slate-950'
+                  }`}
                 >
                   <span>Edit Profile</span>
                   <ArrowRight className="w-3.5 h-3.5" />

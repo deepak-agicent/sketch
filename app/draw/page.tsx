@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { FaceState, PartCategory, PartTransform, Gender } from '../lib/types';
 import { DEFAULT_TRANSFORMS, PART_OPTIONS, SKIN_TONES } from '../lib/face-parts';
-import { PRESET_SUSPECTS } from '../lib/presets';
+import { PRESET_SUSPECTS, REAL_PERSON_PRESETS } from '../lib/presets';
 import { FaceCanvas } from '../components/FaceCanvas';
 import { DemographicSelector } from '../components/DemographicSelector';
 import { FeaturePicker } from '../components/FeaturePicker';
@@ -24,7 +24,14 @@ import {
   ZoomOut, 
   Check, 
   Sparkles,
-  Bookmark
+  Bookmark,
+  User,
+  Star,
+  Info,
+  ChevronDown,
+  ChevronRight,
+  Sliders,
+  Layers
 } from 'lucide-react';
 
 const INITIAL_FACE_STATE: FaceState = {
@@ -57,6 +64,7 @@ function DrawStudioContent() {
   const [faceState, setFaceState] = useState<FaceState>(INITIAL_FACE_STATE);
   const [history, setHistory] = useState<FaceState[]>([INITIAL_FACE_STATE]);
   const [historyIndex, setHistoryIndex] = useState(0);
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(presetParam);
 
   const [activeCategory, setActiveCategory] = useState<PartCategory>('head');
   const [showGrid, setShowGrid] = useState(true);
@@ -64,6 +72,20 @@ function DrawStudioContent() {
   const [zoom, setZoom] = useState(1);
   const [canvasBg, setCanvasBg] = useState<'light' | 'paper' | 'slate' | 'dark'>('light');
   const [isDossierOpen, setIsDossierOpen] = useState(false);
+
+  // Accordion Sections State (Demographics, Features/Parts, Fine-Tune)
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    demographics: true,
+    parts: true,
+    finetune: false,
+  });
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
 
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -75,9 +97,12 @@ function DrawStudioContent() {
         setFaceState(foundPreset.faceState);
         setHistory([foundPreset.faceState]);
         setHistoryIndex(0);
+        setActiveProfileId(presetParam);
       }
     }
   }, [presetParam]);
+
+  const activeProfile = PRESET_SUSPECTS.find(p => p.id === activeProfileId) || (presetParam ? PRESET_SUSPECTS.find(p => p.id === presetParam) : null);
 
   // Helper to push state changes to undo history
   const updateFaceState = (newPartial: Partial<FaceState>) => {
@@ -165,6 +190,7 @@ function DrawStudioContent() {
     const preset = PRESET_SUSPECTS.find((p) => p.id === presetId);
     if (preset) {
       updateFaceState(preset.faceState);
+      setActiveProfileId(presetId);
     }
   };
 
@@ -262,21 +288,30 @@ function DrawStudioContent() {
           {/* Center Header Controls: Presets & Randomize */}
           <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
             {/* Presets Loader */}
-            <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5">
+            <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 shadow-lg">
               <Bookmark className="w-3.5 h-3.5 text-sky-400" />
               <select
                 onChange={(e) => handleLoadPreset(e.target.value)}
                 className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer"
-                defaultValue=""
+                value={activeProfileId || ""}
               >
                 <option value="" disabled className="bg-slate-900 text-slate-400">
-                  Load Suspect Profile Preset...
+                  Select Preset Profile...
                 </option>
-                {PRESET_SUSPECTS.map((p) => (
-                  <option key={p.id} value={p.id} className="bg-slate-900 text-slate-200">
-                    {p.codeName} ({p.demographicSummary})
-                  </option>
-                ))}
+                <optgroup label="⭐ REAL PERSON FACE SKETCHES (12)" className="bg-slate-900 text-amber-400 font-bold">
+                  {REAL_PERSON_PRESETS.map((p) => (
+                    <option key={p.id} value={p.id} className="bg-slate-900 text-amber-200 font-medium">
+                      ⭐ {p.realPersonName} — ({p.demographicSummary})
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="📋 FORENSIC SUSPECT PROFILES" className="bg-slate-900 text-sky-400 font-bold">
+                  {PRESET_SUSPECTS.filter(p => p.category !== 'real-person').map((p) => (
+                    <option key={p.id} value={p.id} className="bg-slate-900 text-slate-200 font-normal">
+                      {p.codeName} ({p.demographicSummary})
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 
@@ -324,25 +359,124 @@ function DrawStudioContent() {
 
       {/* Main Studio Grid Layout */}
       <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Demographics & Micro-Tuning */}
-        <div className="lg:col-span-3 space-y-6">
-          <DemographicSelector
-            faceState={faceState}
-            onChangeGender={handleGenderChange}
-            onChangeAge={handleAgeChange}
-            onChangeSkinTone={handleSkinToneChange}
-          />
+        {/* Left Column: Accordion Settings Sidebar */}
+        <div className="lg:col-span-5 space-y-3">
+          {/* Accordion 1: Demographics */}
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl backdrop-blur-md transition-all">
+            <button
+              onClick={() => toggleSection('demographics')}
+              className="w-full px-4 py-3 bg-slate-900 hover:bg-slate-800/80 flex items-center justify-between transition-colors border-b border-slate-800/60 text-xs font-mono font-bold text-sky-400"
+            >
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-sky-400" />
+                <span>1. DEMOGRAPHICS & BASE PROFILE</span>
+              </div>
+              {openSections.demographics ? (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+            {openSections.demographics && (
+              <div className="p-4">
+                <DemographicSelector
+                  faceState={faceState}
+                  onChangeGender={handleGenderChange}
+                  onChangeAge={handleAgeChange}
+                  onChangeSkinTone={handleSkinToneChange}
+                />
+              </div>
+            )}
+          </div>
 
-          <FineTuneControls
-            category={activeCategory}
-            transform={faceState.transforms[activeCategory] || DEFAULT_TRANSFORMS[activeCategory]}
-            onChangeTransform={handleTransformChange}
-            onResetCategory={handleResetCategory}
-          />
+          {/* Accordion 2: Facial Feature Catalog (FeaturePicker) */}
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl backdrop-blur-md transition-all">
+            <button
+              onClick={() => toggleSection('parts')}
+              className="w-full px-4 py-3 bg-slate-900 hover:bg-slate-800/80 flex items-center justify-between transition-colors border-b border-slate-800/60 text-xs font-mono font-bold text-sky-400"
+            >
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-sky-400" />
+                <span>2. FACIAL FEATURE CATALOG ({activeCategory.toUpperCase()})</span>
+              </div>
+              {openSections.parts ? (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+            {openSections.parts && (
+              <div className="p-4">
+                <FeaturePicker
+                  faceState={faceState}
+                  activeCategory={activeCategory}
+                  onSelectCategory={setActiveCategory}
+                  onSelectPart={handleSelectPart}
+                  onChangeColor={handleColorChange}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Accordion 3: Fine-Tune Controls */}
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl backdrop-blur-md transition-all">
+            <button
+              onClick={() => toggleSection('finetune')}
+              className="w-full px-4 py-3 bg-slate-900 hover:bg-slate-800/80 flex items-center justify-between transition-colors border-b border-slate-800/60 text-xs font-mono font-bold text-sky-400"
+            >
+              <div className="flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-sky-400" />
+                <span>3. FINE-TUNE & MICRO-ADJUSTMENTS</span>
+              </div>
+              {openSections.finetune ? (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+            {openSections.finetune && (
+              <div className="p-4">
+                <FineTuneControls
+                  category={activeCategory}
+                  transform={faceState.transforms[activeCategory] || DEFAULT_TRANSFORMS[activeCategory]}
+                  onChangeTransform={handleTransformChange}
+                  onResetCategory={handleResetCategory}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Center Column: Viewport Canvas & Tactical Toolbar */}
-        <div className="lg:col-span-5 flex flex-col items-center space-y-4">
+        {/* Right Column: Viewport Canvas & Tactical Toolbar */}
+        <div className="lg:col-span-7 flex flex-col items-center space-y-4">
+          {/* Quick Real Person Preset Pill Selector Strip */}
+          <div className="w-full bg-slate-900/90 border border-amber-500/20 rounded-2xl p-2.5 shadow-xl backdrop-blur-md">
+            <div className="flex items-center justify-between px-1 mb-2">
+              <span className="text-[11px] font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 animate-pulse" /> REAL PERSON SKETCH PRESETS
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">1-Click Load</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              {REAL_PERSON_PRESETS.map((rp) => {
+                const isActive = activeProfileId === rp.id;
+                return (
+                  <button
+                    key={rp.id}
+                    onClick={() => handleLoadPreset(rp.id)}
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-mono whitespace-nowrap transition-all duration-200 flex items-center gap-1 border ${
+                      isActive
+                        ? 'bg-amber-500 text-slate-950 font-bold border-amber-300 shadow-md shadow-amber-500/20 scale-105'
+                        : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:border-amber-500/50 hover:text-amber-300'
+                    }`}
+                  >
+                    <span>{rp.realPersonName}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Canvas Card */}
           <div className="w-full relative glass-panel p-4 rounded-3xl border border-sky-500/30 flex flex-col items-center shadow-2xl">
             {/* Viewport Overlay Bar */}
@@ -444,17 +578,39 @@ function DrawStudioContent() {
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Right Column: Modular Feature Selector */}
-        <div className="lg:col-span-4">
-          <FeaturePicker
-            faceState={faceState}
-            activeCategory={activeCategory}
-            onSelectCategory={setActiveCategory}
-            onSelectPart={handleSelectPart}
-            onChangeColor={handleColorChange}
-          />
+          {/* Real Person Reference Hallmark Card */}
+          {activeProfile && activeProfile.category === 'real-person' && (
+            <div className="w-full bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border border-amber-500/40 rounded-2xl p-4 shadow-xl text-xs font-mono">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <Star className="w-4 h-4 fill-amber-400" />
+                  </span>
+                  <div>
+                    <h4 className="font-sans font-bold text-amber-200 text-sm">{activeProfile.realPersonName}</h4>
+                    <p className="text-[10px] text-amber-400/80 uppercase tracking-wide">Real Person Sketch Hallmark Profile</p>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-bold">
+                  ⭐ RECOGNIZABLE PERSONA
+                </span>
+              </div>
+              <p className="text-slate-300 font-sans text-[11px] leading-relaxed mb-3">
+                {activeProfile.description}
+              </p>
+              {activeProfile.notableFeatures && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] text-slate-400 font-bold mr-1">KEY HALLMARKS:</span>
+                  {activeProfile.notableFeatures.map((feat, idx) => (
+                    <span key={idx} className="px-2 py-0.5 rounded-md bg-slate-800 text-amber-300 border border-amber-500/20 text-[10px]">
+                      ✓ {feat}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
 

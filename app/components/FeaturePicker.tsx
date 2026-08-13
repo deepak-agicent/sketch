@@ -73,22 +73,22 @@ export const FeaturePicker: React.FC<FeaturePickerProps> = ({
 
   return (
     <div className="glass-panel p-5 rounded-2xl space-y-5">
-      {/* Category Navigation Bar */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-sky-500/20">
+      {/* Category Navigation Bar (Flex Wrap, No Horizontal Scroll) */}
+      <div className="flex flex-wrap gap-1.5 pb-3 border-b border-sky-500/20">
         {CATEGORY_ITEMS.map((cat) => {
           const isActive = activeCategory === cat.id;
           return (
             <button
               key={cat.id}
               onClick={() => onSelectCategory(cat.id)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                 isActive
-                  ? 'bg-sky-500/20 border-sky-400 text-sky-300 shadow-[0_0_12px_rgba(56,189,248,0.25)]'
+                  ? 'bg-sky-500/20 border-sky-400 text-sky-300 shadow-[0_0_12px_rgba(56,189,248,0.25)] font-bold'
                   : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
               }`}
             >
               {cat.icon}
-              {cat.label}
+              <span>{cat.label}</span>
             </button>
           );
         })}

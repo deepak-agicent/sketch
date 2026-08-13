@@ -58,4 +58,9 @@ export interface SuspectProfile {
   description: string;
   faceState: FaceState;
   createdAt: string;
+  category?: 'forensic' | 'real-person';
+  realPersonName?: string;
+  referenceImageUrl?: string;
+  notableFeatures?: string[];
 }
+
